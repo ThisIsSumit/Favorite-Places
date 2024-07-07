@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart' as syspaths;
 import 'package:favorite_places_app/model/place.dart';
@@ -19,16 +18,20 @@ Future<Database> _getDatabase() async {
 
 class UserPlacesNotifier extends StateNotifier<List<Place>> {
   UserPlacesNotifier() : super(const []);
-  void loadPlaces() async {
+  Future<void> loadPlaces() async {
     final db = await _getDatabase();
     final data = await db.query('user_places');
-    data.map((row) => Place(
-        name: row['title'] as String,
-        image: File(row['image'] as String),
-        location: PlaceLocation(
-            latitude: row['lat'] as double,
-            longitude: row['lng'] as double,
-            address: row['address'] as String)));
+    final places = data
+        .map((row) => Place(
+            id: row['id'],
+            name: row['title'] as String,
+            image: File(row['image'] as String),
+            location: PlaceLocation(
+                latitude: row['lat'] as double,
+                longitude: row['lng'] as double,
+                address: row['address'] as String)))
+        .toList();
+    state = places;
   }
 
   void addPlace(String name, File image, PlaceLocation location) async {
